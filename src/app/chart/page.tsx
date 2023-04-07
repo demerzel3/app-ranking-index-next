@@ -1,5 +1,6 @@
-import { readHistory } from '@/lib/database';
 import dynamic from 'next/dynamic';
+
+import { readHistory } from '@/lib/database';
 
 const Chart = dynamic(() => import('./Chart'), { ssr: false });
 
