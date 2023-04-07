@@ -10,6 +10,7 @@ specifiers:
   next: 13.3.0
   react: 18.2.0
   react-dom: 18.2.0
+  server-only: ^0.0.1
   typescript: 5.0.3
 
 dependencies:
@@ -21,6 +22,7 @@ dependencies:
   next: 13.3.0_biqbaboplfbrettd7655fr4n2y
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
+  server-only: 0.0.1
   typescript: 5.0.3
 
 devDependencies:
@@ -1788,6 +1790,10 @@ packages:
     hasBin: true
     dependencies:
       lru-cache: 6.0.0
+    dev: false
+
+  /server-only/0.0.1:
+    resolution: {integrity: sha512-qepMx2JxAa5jjfzxG79yPPq+8BuFToHd1hm7kI+Z4zAq1ftQiP7HcxMhDDItrbtwVeLg/cY2JnKnrcFkmiswNA==}
     dev: false
 
   /shebang-command/2.0.0:
