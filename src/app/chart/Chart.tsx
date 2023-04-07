@@ -23,7 +23,7 @@ type Props = {
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Legend, Filler, Tooltip, ZoomPlugin);
 
-export function Chart({ appIndex, btcPrice, xAxis }: Props) {
+export default function Chart({ appIndex, btcPrice, xAxis }: Props) {
   return (
     <WindowHigh>
       <Scatter

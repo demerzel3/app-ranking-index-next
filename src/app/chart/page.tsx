@@ -1,6 +1,7 @@
 import { readHistory } from '@/lib/database';
+import dynamic from 'next/dynamic';
 
-import { Chart } from './Chart';
+const Chart = dynamic(() => import('./Chart'), { ssr: false });
 
 const secondsInMillis = (n: number) => n * 1000;
 const minutesInMillis = (n: number) => n * secondsInMillis(60);
