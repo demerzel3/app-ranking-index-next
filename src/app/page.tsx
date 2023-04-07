@@ -1,83 +1,68 @@
-import { Inter } from 'next/font/google';
-import Image from 'next/image';
+import dynamic from 'next/dynamic';
 
-import styles from './page.module.css';
+import { readHistory } from '@/lib/database';
 
-const inter = Inter({ subsets: ['latin'] });
+const Chart = dynamic(() => import('./Chart'), { ssr: false });
 
-export default function Home() {
-  return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image src="/vercel.svg" alt="Vercel Logo" className={styles.vercelLogo} width={100} height={24} priority />
-          </a>
-        </div>
-      </div>
+const secondsInMillis = (n: number) => n * 1000;
+const minutesInMillis = (n: number) => n * secondsInMillis(60);
 
-      <div className={styles.center}>
-        <Image className={styles.logo} src="/next.svg" alt="Next.js Logo" width={180} height={37} priority />
-      </div>
+type PriceApiResult = {
+  result: {
+    XXBTZUSD: [
+      // Time
+      number,
+      // Price
+      number
+    ][];
+  };
+};
 
-      <div className={styles.grid}>
-        <a
-          href="https://beta.nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={inter.className}>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p className={inter.className}>Find in-depth information about Next.js features and API.</p>
-        </a>
+const fetchPriceData = async (): Promise<PriceApiResult> => {
+  const res = await fetch('https://api.kraken.com/0/public/OHLC?pair=XBTUSD&interval=60', {
+    next: { revalidate: minutesInMillis(60) },
+  });
+  if (!res.ok) {
+    return { result: { XXBTZUSD: [] } };
+  }
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={inter.className}>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p className={inter.className}>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
+  return (await res.json()) as PriceApiResult;
+};
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={inter.className}>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p className={inter.className}>Explore the Next.js 13 playground.</p>
-        </a>
+const getHistoryData = async () => {
+  const thirtyDaysAgo = Math.floor(Date.now() / 1000) - 30 * 24 * 3600;
+  const records = await readHistory({
+    fromTime: thirtyDaysAgo,
+  });
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={inter.className}>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p className={inter.className}>Instantly deploy your Next.js site to a shareable URL with Vercel.</p>
-        </a>
-      </div>
-    </main>
-  );
+  return records.map((entry) => ({
+    ...entry,
+    // Round the time to the hour
+    time: Math.floor(entry.time / 3600) * 3600,
+  }));
+};
+
+const fetchData = async () => {
+  const [priceData, historyData] = await Promise.all([fetchPriceData(), getHistoryData()]);
+
+  const appIndex = historyData.map((item) => ({
+    x: item.time,
+    y: item.value * 100,
+  }));
+  const btcPrice = priceData.result.XXBTZUSD.map((ohlc) => ({
+    x: ohlc[0],
+    y: ohlc[1],
+  }));
+  const xAxis = {
+    min: btcPrice[0].x - 10_000,
+    max: btcPrice[btcPrice.length - 1].x + 10_000,
+  };
+
+  return { appIndex, btcPrice, xAxis };
+};
+
+export default async function ChartPage() {
+  const { appIndex, btcPrice, xAxis } = await fetchData();
+
+  return <Chart appIndex={appIndex} btcPrice={btcPrice} xAxis={xAxis} />;
 }
