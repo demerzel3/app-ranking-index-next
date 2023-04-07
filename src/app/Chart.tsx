@@ -13,7 +13,7 @@ import {
 import ZoomPlugin from 'chartjs-plugin-zoom';
 import { Scatter } from 'react-chartjs-2';
 
-import { WindowHigh } from './WindowHigh';
+import { WindowHigh } from '@/components/WindowHigh';
 
 type Props = {
   appIndex: { x: number; y: number }[];
