@@ -1,3 +1,4 @@
+import auth from 'basic-auth';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { NextResponse } from 'next/server';
 
@@ -22,7 +23,16 @@ export async function GET() {
   );
 }
 
-export async function POST() {
+export async function POST(req: Request) {
+  const credentials = auth.parse(req.headers.get('authorization') ?? '');
+  if (
+    !credentials ||
+    credentials.name !== process.env.CRON_USERNAME ||
+    credentials.pass !== process.env.CRON_PASSWORD
+  ) {
+    return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+  }
+
   const [appIdsByRank, exchangeWeight] = await Promise.all([fetchUSFinanceAppIds(), fetchExchangesWeighted()]);
   const appIdsByRankMap = appIdsByRank.reduce((map, id, index) => {
     map[id] = index + 1;
