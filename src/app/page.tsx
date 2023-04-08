@@ -1,7 +1,6 @@
 import dynamic from 'next/dynamic';
 
 import { readHistory } from '@/lib/database';
-import { minutesInMillis } from '@/lib/time';
 
 const Chart = dynamic(() => import('./Chart'), { ssr: false });
 
@@ -17,9 +16,7 @@ type PriceApiResult = {
 };
 
 const fetchPriceData = async (): Promise<PriceApiResult> => {
-  const res = await fetch('https://api.kraken.com/0/public/OHLC?pair=XBTUSD&interval=60', {
-    next: { revalidate: minutesInMillis(60) },
-  });
+  const res = await fetch('https://api.kraken.com/0/public/OHLC?pair=XBTUSD&interval=60');
   if (!res.ok) {
     return { result: { XXBTZUSD: [] } };
   }
@@ -58,6 +55,8 @@ const fetchData = async () => {
 
   return { appIndex, btcPrice, xAxis };
 };
+
+export const revalidate = 3600; // 1 hour
 
 export default async function ChartPage() {
   const { appIndex, btcPrice, xAxis } = await fetchData();

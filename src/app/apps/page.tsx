@@ -50,6 +50,8 @@ const fetchData = async () => {
   return { rankingByApp, xAxis };
 };
 
+export const revalidate = 3600; // 1 hour
+
 export default async function ChartPage() {
   const { rankingByApp, xAxis } = await fetchData();
 
