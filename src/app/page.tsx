@@ -1,11 +1,9 @@
 import dynamic from 'next/dynamic';
 
 import { readHistory } from '@/lib/database';
+import { minutesInMillis } from '@/lib/time';
 
 const Chart = dynamic(() => import('./Chart'), { ssr: false });
-
-const secondsInMillis = (n: number) => n * 1000;
-const minutesInMillis = (n: number) => n * secondsInMillis(60);
 
 type PriceApiResult = {
   result: {

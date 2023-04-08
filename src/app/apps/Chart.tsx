@@ -15,6 +15,7 @@ import { Scatter } from 'react-chartjs-2';
 
 import { WindowHigh } from '@/components/WindowHigh';
 import { EXCHANGE_META } from '@/lib/meta';
+import { secondsInMillis } from '@/lib/time';
 import { ExchangeName } from '@/lib/types';
 
 type Props = {
@@ -136,7 +137,7 @@ export default function Chart({ rankingByApp, xAxis }: Props) {
                     foundItem[item.datasetIndex] = true;
                   });
 
-                  return formatDate(new Date(secondsToMillis(time)));
+                  return formatDate(new Date(secondsInMillis(time)));
                 },
                 label: (item) => {
                   //@ts-ignore
@@ -156,8 +157,6 @@ export default function Chart({ rankingByApp, xAxis }: Props) {
     </WindowHigh>
   );
 }
-
-const secondsToMillis = (seconds: number) => seconds * 1000;
 
 const formatDate = (date: Date) => {
   return date.toLocaleDateString('en-US', {
