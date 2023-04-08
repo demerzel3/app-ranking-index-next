@@ -76,11 +76,12 @@ export default function Chart({ rankingByApp, xAxis }: Props) {
             rankingScale: {
               axis: 'y',
               position: 'left',
-              min: 0,
+              min: 1,
               max: 200,
               reverse: true,
               ticks: {
-                color: '#36a2eb',
+                color: '#eeeeee',
+                callback: (value) => (value === 1 ? '🏆' : `#${value}`),
               },
               grid: {
                 color: '#343434',
@@ -118,10 +119,13 @@ export default function Chart({ rankingByApp, xAxis }: Props) {
             tooltip: {
               mode: 'x',
               intersect: false,
+              // Sort items by ranking.
+              itemSort(a, b) {
+                return a.parsed.y - b.parsed.y;
+              },
               callbacks: {
                 title: (items) => {
-                  const [item] = items;
-                  const time = item.parsed.x;
+                  const time = items[0].parsed.x;
 
                   let foundItem: Partial<Record<number, boolean>> = {};
                   items.forEach((item) => {
@@ -132,13 +136,7 @@ export default function Chart({ rankingByApp, xAxis }: Props) {
                     foundItem[item.datasetIndex] = true;
                   });
 
-                  return new Date(time * 1000).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    hour12: true,
-                    hour: 'numeric',
-                    minute: '2-digit',
-                  });
+                  return formatDate(new Date(secondsToMillis(time)));
                 },
                 label: (item) => {
                   //@ts-ignore
@@ -159,8 +157,14 @@ export default function Chart({ rankingByApp, xAxis }: Props) {
   );
 }
 
-const usdFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  maximumFractionDigits: 0,
-});
+const secondsToMillis = (seconds: number) => seconds * 1000;
+
+const formatDate = (date: Date) => {
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour12: true,
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+};
