@@ -16,7 +16,10 @@ type PriceApiResult = {
 };
 
 const fetchPriceData = async (): Promise<PriceApiResult> => {
-  const res = await fetch('https://api.kraken.com/0/public/OHLC?pair=XBTUSD&interval=60');
+  const res = await fetch('https://api.kraken.com/0/public/OHLC?pair=XBTUSD&interval=60', {
+    // Revalidate every hour
+    next: { revalidate: 3600 },
+  });
   if (!res.ok) {
     return { result: { XXBTZUSD: [] } };
   }
