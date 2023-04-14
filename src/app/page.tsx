@@ -58,7 +58,7 @@ const fetchData = async () => {
 
 export const revalidate = 3600; // 1 hour
 
-export default async function ChartPage() {
+export default async function HomePage() {
   const { appIndex, btcPrice, xAxis } = await fetchData();
 
   return <Chart appIndex={appIndex} btcPrice={btcPrice} xAxis={xAxis} />;
