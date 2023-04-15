@@ -1,5 +1,6 @@
 import dynamic from 'next/dynamic';
 
+import { calculate24hRollingAverage } from '@/lib/data';
 import { readHistory } from '@/lib/database';
 import { ExchangeName } from '@/lib/types';
 
@@ -20,7 +21,7 @@ const getHistoryData = async () => {
 
 const fetchData = async () => {
   const historyData = await getHistoryData();
-  const rankingByApp: Record<ExchangeName, { x: number; y: number }[]> = {
+  const rankingByApp: Record<ExchangeName, { time: number; value: number }[]> = {
     binance: [],
     bitfinex: [],
     bybit: [],
@@ -36,18 +37,27 @@ const fetchData = async () => {
   historyData.forEach((item) => {
     item.details.forEach((detail) => {
       rankingByApp[detail.name].push({
-        x: item.time,
-        y: detail.ranking ?? 200,
+        time: item.time,
+        value: detail.ranking ?? 200,
       });
     });
   });
+
+  const rankingByApp24hRollingAverage = Object.entries(rankingByApp).reduce((acc, [exchange, entries]) => {
+    acc[exchange as ExchangeName] = calculate24hRollingAverage(entries).map(({ time, value }) => ({
+      x: time,
+      y: value,
+    }));
+
+    return acc;
+  }, {} as Record<ExchangeName, { x: number; y: number }[]>);
 
   const xAxis = {
     min: historyData[0].time - 10_000,
     max: historyData[historyData.length - 1].time + 10_000,
   };
 
-  return { rankingByApp, xAxis };
+  return { rankingByApp: rankingByApp24hRollingAverage, xAxis };
 };
 
 export const revalidate = 3600; // 1 hour

@@ -1,6 +1,8 @@
 import dynamic from 'next/dynamic';
 
+import { calculate24hRollingAverage } from '@/lib/data';
 import { readHistory } from '@/lib/database';
+import { daysInSeconds, hoursInSeconds } from '@/lib/time';
 
 const Chart = dynamic(() => import('./Chart'), { ssr: false });
 
@@ -18,7 +20,7 @@ type PriceApiResult = {
 const fetchPriceData = async (): Promise<PriceApiResult> => {
   const res = await fetch('https://api.kraken.com/0/public/OHLC?pair=XBTUSD&interval=60', {
     // Revalidate every hour
-    next: { revalidate: 3600 },
+    next: { revalidate: hoursInSeconds(1) },
   });
   if (!res.ok) {
     return { result: { XXBTZUSD: [] } };
@@ -28,15 +30,15 @@ const fetchPriceData = async (): Promise<PriceApiResult> => {
 };
 
 const getHistoryData = async () => {
-  const thirtyDaysAgo = Math.floor(Date.now() / 1000) - 30 * 24 * 3600;
+  const thirtyDaysAgo = Math.floor(Date.now() / 1000) - daysInSeconds(30);
   const records = await readHistory({
     fromTime: thirtyDaysAgo,
   });
 
-  return records.map((entry) => ({
-    ...entry,
+  return calculate24hRollingAverage(records).map((entry) => ({
     // Round the time to the hour
-    time: Math.floor(entry.time / 3600) * 3600,
+    time: Math.floor(entry.time / hoursInSeconds(1)) * hoursInSeconds(1),
+    value: entry.value,
   }));
 };
 
