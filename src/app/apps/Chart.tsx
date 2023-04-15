@@ -41,7 +41,7 @@ export default function Chart({ rankingByApp, xAxis }: Props) {
             },
           },
         }}
-        tooltipLabel={(item) => (item.parsed.y === 200 ? '' : `${item.dataset.label} #${item.parsed.y}`)}
+        tooltipLabel={(item) => (item.parsed.y === 200 ? '' : `${item.dataset.label} #${Math.round(item.parsed.y)}`)}
       />
     </WindowHigh>
   );
