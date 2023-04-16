@@ -67,6 +67,22 @@ export const getLatestEntry = async (): Promise<HistoryEntry | undefined> => {
   }
 };
 
+export const getLatest24HAverage = async (): Promise<number> => {
+  const client = await getPool().connect();
+  try {
+    const result = await client.query(
+      'SELECT time FROM history WHERE time >= ((SELECT time FROM history ORDER BY time DESC LIMIT 1) - 86400)'
+    );
+
+    return parseFloat(result.rows[0].avg);
+  } catch (err: any) {
+    console.log(err.stack);
+    return 0;
+  } finally {
+    client.release();
+  }
+};
+
 function parseHistoryEntry(row: any): HistoryEntry {
   const { time, value, details } = row;
 

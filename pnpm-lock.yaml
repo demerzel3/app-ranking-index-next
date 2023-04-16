@@ -2,6 +2,7 @@ lockfileVersion: 5.4
 
 specifiers:
   '@types/basic-auth': ^1.1.3
+  '@types/gaugejs': ^1.3.1
   '@types/node': 18.15.11
   '@types/pg': ^8.6.6
   '@types/react': 18.0.33
@@ -12,6 +13,7 @@ specifiers:
   eslint: 8.37.0
   eslint-config-next: 13.3.0
   eslint-plugin-simple-import-sort: ^10.0.0
+  gaugeJS: ^1.3.7
   next: 13.3.0
   pg: ^8.10.0
   react: 18.2.0
@@ -30,6 +32,7 @@ dependencies:
   chartjs-plugin-zoom: 2.0.1_chart.js@4.2.1
   eslint: 8.37.0
   eslint-config-next: 13.3.0_vwh6htx42aidho2qgfca5u5rwm
+  gaugeJS: 1.3.7
   next: 13.3.0_biqbaboplfbrettd7655fr4n2y
   pg: 8.10.0
   react: 18.2.0
@@ -39,6 +42,7 @@ dependencies:
   typescript: 5.0.3
 
 devDependencies:
+  '@types/gaugejs': 1.3.1
   '@types/pg': 8.6.6
   eslint-plugin-simple-import-sort: 10.0.0_eslint@8.37.0
 
@@ -241,6 +245,10 @@ packages:
     dependencies:
       '@types/node': 18.15.11
     dev: false
+
+  /@types/gaugejs/1.3.1:
+    resolution: {integrity: sha512-SqmJPXBJL77ksEMnERckLcPWPYJkoov3r1bZFzXlFDg+RrFBFNgk+h5YwfbBtHpaddHHa7VjZcGPwCZA7lz77Q==}
+    dev: true
 
   /@types/json5/0.0.29:
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
@@ -1087,6 +1095,10 @@ packages:
 
   /functions-have-names/1.2.3:
     resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
+    dev: false
+
+  /gaugeJS/1.3.7:
+    resolution: {integrity: sha512-te8IYMlgZOSbDmiecCwI+IOEUvEhYbniC+2qicPz7Bco5XV05QMtUr8ILqPuR+txtPC5855dZZojUHi0r15oWQ==}
     dev: false
 
   /get-intrinsic/1.2.0:
