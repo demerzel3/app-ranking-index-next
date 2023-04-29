@@ -60,12 +60,15 @@ const Gauge = ({ index }: Props) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'row', fontFamily: 'sans-serif', fontSize: 30 }}>
       <div
+        id="widget"
         style={{
           display: 'flex',
           flexDirection: 'column',
           textAlign: 'center',
           position: 'relative',
           paddingBottom: 24,
+          background: 'rgb(var(--background-rgb))',
+          borderRadius: 48,
         }}
       >
         <canvas ref={gaugeElement} width={540} height={300} />
