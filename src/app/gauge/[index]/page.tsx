@@ -1,11 +1,7 @@
-import dynamic from 'next/dynamic';
-import { useRouter } from 'next/router';
-
+import GaugeWidget from '@/components/GaugeWidget';
 import { calculate24hRollingAverage } from '@/lib/data';
 import { readHistory } from '@/lib/database';
 import { ExchangeName } from '@/lib/types';
-
-const Gauge = dynamic(() => import('@/components/Gauge'), { ssr: false });
 
 const getHistoryData = async () => {
   const thirtyDaysAgo = Math.floor(Date.now() / 1000) - 30 * 24 * 3600;
@@ -73,5 +69,41 @@ export default async function GaugePage({ params }: { params: { index: string } 
     return null;
   }
 
-  return <Gauge index={indexNumber} />;
+  return (
+    <GaugeWidget
+      index={indexNumber}
+      details={[
+        {
+          name: 'coinbase',
+          impact: 0,
+          ranking: 37,
+          weight: 0,
+        },
+        {
+          name: 'binance',
+          impact: 0,
+          ranking: 47,
+          weight: 0,
+        },
+        {
+          name: 'cryptocom',
+          impact: 0,
+          ranking: 49,
+          weight: 0,
+        },
+        {
+          name: 'okx',
+          impact: 0,
+          ranking: 132,
+          weight: 0,
+        },
+        {
+          name: 'kraken',
+          impact: 0,
+          ranking: 165,
+          weight: 0,
+        },
+      ]}
+    />
+  );
 }
