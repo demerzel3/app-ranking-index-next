@@ -50,6 +50,7 @@ const LinearGauge = ({ currentValue, height = 240, width = 48, triangleSize = 20
           flexDirection: 'column-reverse',
           borderRadius: 8,
           overflow: 'hidden',
+          position: 'relative',
           width,
           height,
         }}
@@ -57,6 +58,18 @@ const LinearGauge = ({ currentValue, height = 240, width = 48, triangleSize = 20
         <div style={{ backgroundColor: '#4472c4', height: triangleSize / 2 }}></div>
         {createGaugeDivs()}
         <div style={{ backgroundColor: '#c00000', height: triangleSize / 2 }}></div>
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            height: arrowPosition,
+            width,
+            backgroundImage: `linear-gradient(to top, rgba(var(--background-rgb), ${
+              (100 - currentValue) / 100
+            }), rgba(var(--background-rgb), ${((100 - currentValue) / 100) * 2}))`,
+          }}
+        />
       </div>
       <div
         style={{
@@ -72,7 +85,7 @@ const LinearGauge = ({ currentValue, height = 240, width = 48, triangleSize = 20
           borderRightWidth: `${triangleSize}px`,
           top: `${arrowPosition - triangleSize / 2}px`,
         }}
-      ></div>
+      />
     </div>
   );
 };
