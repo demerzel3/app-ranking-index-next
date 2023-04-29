@@ -1,6 +1,6 @@
 'use client';
 
-import { Gauge as GaugeJs, GaugeOptions } from 'gaugeJS';
+import { Gauge as GaugeJs, GaugeOptions } from 'gaugejs';
 import React, { useEffect, useRef } from 'react';
 
 type Props = {
