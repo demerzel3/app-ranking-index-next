@@ -84,7 +84,10 @@ const GaugeWidget = ({ index, details }: Props) => {
               <img style={{ borderRadius: 4 }} src={EXCHANGE_META[detail.name].iconUrl} width={28} height={28} />
               <div
                 style={{
-                  padding: '4px 12px',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  display: 'flex',
                   backgroundColor: 'rgb(60, 60, 60)',
                   borderRadius: 4,
                   marginLeft: 8,
@@ -93,7 +96,7 @@ const GaugeWidget = ({ index, details }: Props) => {
                   textAlign: 'center',
                 }}
               >
-                #{detail.ranking}
+                <span>#{detail.ranking}</span>
               </div>
               <div
                 style={{
@@ -133,7 +136,7 @@ const getIndexDescription = (index: number): string => {
     case index <= 90:
       return 'Sell. Srsly, SELL!';
     default: // 90-100
-      return 'Maximum bubble';
+      return 'Defo a bubble';
   }
 };
 
