@@ -25,17 +25,21 @@ export async function GET(req: Request) {
     omit_background: true,
     cache: true,
     cache_ttl: 2592000,
-    cache_key: 'some-cache-key', // TODO: fix this
+    cache_key: 'somecachekey', // TODO: fix this
   };
   const screenshotUrl = `https://api.screenshotone.com/take?${qs.stringify(screenshotParams)}`;
   const screenshot = await fetch(screenshotUrl);
 
-  return new NextResponse(await screenshot.blob(), {
-    headers: {
-      'Content-Type': 'image/png',
-    },
-    status: 200,
-  });
+  if (screenshot.ok) {
+    return new NextResponse(await screenshot.blob(), {
+      headers: {
+        'Content-Type': 'image/png',
+      },
+      status: 200,
+    });
+  } else {
+    return NextResponse.json(await screenshot.json(), { status: 500 });
+  }
 }
 
 function getProtocol() {
