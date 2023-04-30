@@ -74,8 +74,6 @@ export const getLatest24HAverage = async (): Promise<number> => {
       'SELECT AVG(value) as avg FROM history WHERE time >= ((SELECT time FROM history ORDER BY time DESC LIMIT 1) - 86400)'
     );
 
-    console.log(result.rows[0]);
-
     return parseFloat(result.rows[0].avg);
   } catch (err: any) {
     console.log(err.stack);

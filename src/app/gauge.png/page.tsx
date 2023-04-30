@@ -1,4 +1,5 @@
-import GaugeWidget from '@/components/GaugeWidget';
+import qs from 'qs';
+
 import { getLatest24HAverage, getLatestEntry } from '@/lib/database';
 
 export const revalidate = 3600; // 1 hour
@@ -20,5 +21,8 @@ export default async function CurrentGaugePage() {
     return det1.ranking! - det2.ranking!;
   });
 
-  return <p>{process.env.VERCEL_URL}/gauge</p>;
+  const accessKey = process.env.SCREENSHOTONE_ACCESS_KEY;
+  const gaugeUrl = `https://${process.env.VERCEL_URL}/gauge`;
+
+  return <p></p>;
 }
