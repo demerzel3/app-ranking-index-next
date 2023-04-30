@@ -1,30 +1,17 @@
 import { EXCHANGE_META } from '@/lib/meta';
-import { Details } from '@/lib/types';
+import { ExchangeName } from '@/lib/types';
 
 import LinearGauge from './LinearGauge';
 
 type Props = {
   index: number;
-  details: Details[];
+  rankedExchanges: {
+    name: ExchangeName;
+    ranking: number | null;
+  }[];
 };
 
-const GaugeWidget = ({ index, details }: Props) => {
-  const detailsByRankingAndWeight = [...details]
-    .sort((det1, det2) => {
-      if (det2.ranking === null && det1.ranking !== null) {
-        return -1;
-      }
-      if (det1.ranking === null && det2.ranking !== null) {
-        return 1;
-      }
-      if (det1.ranking === null && det2.ranking === null) {
-        return det2.weight - det1.weight;
-      }
-
-      return det1.ranking! - det2.ranking!;
-    })
-    .slice(0, 5);
-
+const GaugeWidget = ({ index, rankedExchanges }: Props) => {
   return (
     <div
       style={{
@@ -40,7 +27,6 @@ const GaugeWidget = ({ index, details }: Props) => {
           background: 'rgb(var(--background-rgb))',
           borderRadius: 24,
           color: 'rgb(var(--text-rgb))',
-          fontFamily: 'sans-serif',
           minWidth: 450,
         }}
       >
@@ -52,7 +38,7 @@ const GaugeWidget = ({ index, details }: Props) => {
               flexDirection: 'row',
               marginLeft: 36,
               fontSize: 28,
-              fontWeight: 'bold',
+              fontWeight: 600,
               marginBottom: 18,
             }}
           >
@@ -70,9 +56,9 @@ const GaugeWidget = ({ index, details }: Props) => {
             </div>
             {getIndexDescription(index)}
           </div>
-          {detailsByRankingAndWeight.map((detail) => (
+          {rankedExchanges.slice(0, 5).map((exchange) => (
             <div
-              key={detail.name}
+              key={exchange.name}
               style={{
                 display: 'flex',
                 flexDirection: 'row',
@@ -81,30 +67,35 @@ const GaugeWidget = ({ index, details }: Props) => {
                 marginTop: 12,
               }}
             >
-              <img style={{ borderRadius: 4 }} src={EXCHANGE_META[detail.name].iconUrl} width={28} height={28} />
+              <img style={{ borderRadius: 4 }} src={EXCHANGE_META[exchange.name].iconUrl} width={28} height={28} />
               <div
                 style={{
+                  display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  display: 'flex',
                   backgroundColor: 'rgb(60, 60, 60)',
                   borderRadius: 4,
                   marginLeft: 8,
                   minWidth: 64,
-                  fontSize: 16,
+                  fontSize: 14,
+                  fontWeight: 500,
                   textAlign: 'center',
                 }}
               >
-                <span>#{detail.ranking}</span>
+                {exchange.ranking ? `#${exchange.ranking}` : '> #200'}
               </div>
               <div
                 style={{
-                  padding: '4px 0',
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   marginLeft: 8,
+                  fontWeight: 300,
                 }}
               >
-                {EXCHANGE_META[detail.name].displayName}
+                {EXCHANGE_META[exchange.name].displayName}
               </div>
             </div>
           ))}

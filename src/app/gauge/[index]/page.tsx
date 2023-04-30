@@ -72,37 +72,12 @@ export default async function GaugePage({ params }: { params: { index: string } 
   return (
     <GaugeWidget
       index={indexNumber}
-      details={[
-        {
-          name: 'coinbase',
-          impact: 0,
-          ranking: 37,
-          weight: 0,
-        },
-        {
-          name: 'binance',
-          impact: 0,
-          ranking: 47,
-          weight: 0,
-        },
-        {
-          name: 'cryptocom',
-          impact: 0,
-          ranking: 49,
-          weight: 0,
-        },
-        {
-          name: 'okx',
-          impact: 0,
-          ranking: 132,
-          weight: 0,
-        },
-        {
-          name: 'kraken',
-          impact: 0,
-          ranking: 165,
-          weight: 0,
-        },
+      rankedExchanges={[
+        { name: 'coinbase', ranking: 37 },
+        { name: 'binance', ranking: 47 },
+        { name: 'cryptocom', ranking: 49 },
+        { name: 'okx', ranking: 132 },
+        { name: 'kraken', ranking: null },
       ]}
     />
   );
