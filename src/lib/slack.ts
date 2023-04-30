@@ -27,6 +27,29 @@ const getIndexDescription = (index: number): string => {
   }
 };
 
+export const postGaugeToSlack = (host: string) => {
+  const blocks = [
+    {
+      type: 'image',
+      // TODO: not sure if we need a cache buster here
+      image_url: `https://${host}/api/gauge.png`,
+      alt_text: 'Current App Ranking Index & Chart',
+    },
+  ];
+
+  return fetch('https://slack.com/api/chat.postMessage', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      Authorization: `Bearer ${SLACK_BOT_TOKEN}`,
+    },
+    body: JSON.stringify({
+      channel: SLACK_CHANNEL,
+      blocks,
+    }),
+  });
+};
+
 export const postToSlack = (index: number, details: Details[]) => {
   const displayIndex = Math.round(index * 100);
   const indexDescription = getIndexDescription(displayIndex);
