@@ -59,7 +59,7 @@ const fetchData = async () => {
 
 export const revalidate = 3600; // 1 hour
 
-export default async function GaugePage({ params }: { params: { index: string } }) {
+export default async function CustomGaugePage({ params }: { params: { index: string } }) {
   const { index } = params;
   const indexNumber = Number(index);
 
