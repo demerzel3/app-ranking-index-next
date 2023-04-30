@@ -31,8 +31,7 @@ export const postGaugeToSlack = (host: string) => {
   const blocks = [
     {
       type: 'image',
-      // TODO: not sure if we need a cache buster here
-      image_url: `https://${host}/api/gauge.png`,
+      image_url: `https://${host}/api/gauge.png?cachebuster=${Date.now()}`,
       alt_text: 'Current App Ranking Index & Chart',
     },
   ];
