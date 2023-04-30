@@ -1,3 +1,5 @@
+import './noBackground.css';
+
 import GaugeWidget from '@/components/GaugeWidget';
 import { getLatest24HAverage, getLatestEntry } from '@/lib/database';
 

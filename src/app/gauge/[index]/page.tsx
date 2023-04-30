@@ -1,3 +1,5 @@
+import '../noBackground.css';
+
 import GaugeWidget from '@/components/GaugeWidget';
 import { calculate24hRollingAverage } from '@/lib/data';
 import { readHistory } from '@/lib/database';
