@@ -1,11 +1,9 @@
-import auth from 'basic-auth';
 import { NextResponse } from 'next/server';
 import qs from 'qs';
 
 import { getLatest24HAverage, getLatestEntry } from '@/lib/database';
-import { postToSlack } from '@/lib/slack';
 
-const SCREENSHOTONE_API_KEY = process.env.SCREENSHOTONE_API_KEY;
+const SCREENSHOTONE_ACCESS_KEY = process.env.SCREENSHOTONE_ACCESS_KEY;
 
 export async function GET(req: Request) {
   const [index, latestEntry] = await Promise.all([getLatest24HAverage(), getLatestEntry()]);
@@ -16,7 +14,7 @@ export async function GET(req: Request) {
 
   const gaugeUrl = `${getProtocol()}${req.headers.get('host')}/gauge`;
   const screenshotParams = {
-    access_key: SCREENSHOTONE_API_KEY,
+    access_key: SCREENSHOTONE_ACCESS_KEY,
     url: gaugeUrl,
     viewport_width: 450,
     viewport_height: 290,
