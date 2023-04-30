@@ -38,7 +38,7 @@ export async function GET(req: Request) {
   });
 }
 
-export function getProtocol() {
+function getProtocol() {
   const isProd = process.env.VERCEL_ENV === 'production';
 
   return isProd ? 'https://' : 'http://';
