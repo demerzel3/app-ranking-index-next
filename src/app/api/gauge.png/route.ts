@@ -1,5 +1,4 @@
-import { NextApiRequest } from 'next';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import qs from 'qs';
 
 import { cacheKeyToGaugeProps } from '@/lib/gauge';
@@ -8,8 +7,8 @@ import { getApiHost } from '../../../lib/getApiHost';
 
 const SCREENSHOTONE_ACCESS_KEY = process.env.SCREENSHOTONE_ACCESS_KEY;
 
-export async function GET(req: NextApiRequest) {
-  const cacheKey = req.query['cacheKey'];
+export async function GET(req: NextRequest) {
+  const cacheKey = req.nextUrl.searchParams.get('cacheKey');
   if (typeof cacheKey !== 'string') {
     return NextResponse.json({ error: 'Invalid cache key, please provide a string' }, { status: 400 });
   }
