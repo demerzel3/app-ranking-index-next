@@ -3,7 +3,7 @@ import 'server-only';
 import { getPool } from './getPool';
 import { Details } from './types';
 
-type HistoryEntry = {
+export type HistoryEntry = {
   time: number;
   value: number;
   details: Details[];

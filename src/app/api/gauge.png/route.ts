@@ -1,30 +1,25 @@
+import { NextApiRequest } from 'next';
 import { NextResponse } from 'next/server';
 import qs from 'qs';
 
-import { getLatest24HAverage, getLatestEntry } from '@/lib/database';
-import { sortByRanking } from '@/lib/sortByRanking';
+import { cacheKeyToGaugeProps } from '@/lib/gauge';
 
 import { getApiHost } from '../../../lib/getApiHost';
 
 const SCREENSHOTONE_ACCESS_KEY = process.env.SCREENSHOTONE_ACCESS_KEY;
 
-export async function GET(req: Request) {
-  const [index, latestEntry] = await Promise.all([getLatest24HAverage(), getLatestEntry()]);
-
-  if (!latestEntry) {
-    return NextResponse.json({ error: 'Failed to retrieve the latest entry from the database' }, { status: 500 });
+export async function GET(req: NextApiRequest) {
+  const cacheKey = req.query['cacheKey'];
+  if (typeof cacheKey !== 'string') {
+    return NextResponse.json({ error: 'Invalid cache key, please provide a string' }, { status: 400 });
   }
 
-  const cacheKey =
-    'i' +
-    String(Math.round(index * 100)) +
-    'd' +
-    sortByRanking(latestEntry.details)
-      .slice(0, 5)
-      .map(({ name, ranking }) => `${ranking}${name}`)
-      .join('');
+  const gaugeProps = cacheKeyToGaugeProps(cacheKey);
+  if (!gaugeProps) {
+    return NextResponse.json({ error: 'Invalid cache key, please provide a valid cache key' }, { status: 400 });
+  }
 
-  const gaugeUrl = `https://${getApiHost(req)}/gauge`;
+  const gaugeUrl = `https://${getApiHost(req)}/gauge/${encodeURIComponent(cacheKey)}`;
   const screenshotParams = {
     access_key: SCREENSHOTONE_ACCESS_KEY,
     url: gaugeUrl,
@@ -44,6 +39,8 @@ export async function GET(req: Request) {
     return new NextResponse(await screenshot.blob(), {
       headers: {
         'Content-Type': 'image/png',
+        // TODO: add immutable directive once testing is done
+        'Cache-Control': 'max-age=31536000, s-maxage=31536000, public', // Cache for 1 year
       },
       status: 200,
     });

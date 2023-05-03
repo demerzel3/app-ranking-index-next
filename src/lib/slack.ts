@@ -1,3 +1,4 @@
+import { gaugePropsToCacheKey, getLatestGaugeProps } from './gauge';
 import { EXCHANGE_META } from './meta';
 import { Details } from './types';
 
@@ -27,11 +28,18 @@ const getIndexDescription = (index: number): string => {
   }
 };
 
-export const postGaugeToSlack = (host: string) => {
+export const postGaugeToSlack = async (host: string) => {
+  const gaugeProps = await getLatestGaugeProps();
+  if (!gaugeProps) {
+    console.error('Failed to retrieve the latest gauge props');
+    return;
+  }
+
+  const cacheKey = gaugePropsToCacheKey(gaugeProps);
   const blocks = [
     {
       type: 'image',
-      image_url: `https://${host}/api/gauge.png?cachebuster=${Date.now()}`,
+      image_url: `https://${host}/api/gauge.png?cacheKey=${encodeURIComponent(cacheKey)}`,
       alt_text: 'Current App Ranking Index & Chart',
     },
   ];
