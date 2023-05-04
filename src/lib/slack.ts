@@ -1,32 +1,8 @@
+import qs from 'qs';
+
 import { gaugePropsToCacheKey, getLatestGaugeProps } from './gauge';
-import { EXCHANGE_META } from './meta';
-import { Details } from './types';
 
-const { SLACK_BOT_TOKEN, SLACK_CHANNEL } = process.env;
-
-// Borrowed from the one and only bitcoin rainbow cart.
-const getIndexDescription = (index: number): string => {
-  switch (true) {
-    case index <= 10: // 0-10
-      return 'basically a fire sale.';
-    case index <= 20: // 10-20
-      return 'BUY!';
-    case index <= 30:
-      return 'accumulate.';
-    case index <= 40:
-      return 'still cheap.';
-    case index <= 60: // 40-60
-      return "hold (or buy more, I won't judge).";
-    case index <= 70:
-      return 'is this a bubble?';
-    case index <= 80:
-      return 'FOMO intensifies.';
-    case index <= 90:
-      return 'sell. Seriously, SELL!';
-    default: // 90-100
-      return 'maximum bubble territory.';
-  }
-};
+const { SLACK_BOT_TOKEN, SLACK_CHANNEL, SCREENSHOTONE_ACCESS_KEY } = process.env;
 
 export const postGaugeToSlack = async (host: string) => {
   const gaugeProps = await getLatestGaugeProps();
@@ -35,109 +11,69 @@ export const postGaugeToSlack = async (host: string) => {
     return;
   }
 
+  // Take screenshot
   const cacheKey = gaugePropsToCacheKey(gaugeProps);
-  const blocks = [
-    {
-      type: 'image',
-      image_url: `https://${host}/api/gauge.png?cacheKey=${encodeURIComponent(cacheKey)}`,
-      alt_text: 'Current App Ranking Index & Chart',
-    },
-  ];
+  const gaugeUrl = `https://${host}/gauge/${encodeURIComponent(cacheKey)}`;
+  const screenshotParams = {
+    access_key: SCREENSHOTONE_ACCESS_KEY,
+    url: gaugeUrl,
+    viewport_width: 450,
+    viewport_height: 290,
+    device_scale_factor: 3,
+    format: 'png',
+    omit_background: true,
+    cache: true,
+    cache_ttl: 2592000,
+    cache_key: cacheKey,
+  };
+  const screenshotUrl = `https://api.screenshotone.com/take?${qs.stringify(screenshotParams)}`;
+  const screenshotResponse = await fetch(screenshotUrl);
 
-  return fetch('https://slack.com/api/chat.postMessage', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-      Authorization: `Bearer ${SLACK_BOT_TOKEN}`,
-    },
-    body: JSON.stringify({
-      channel: SLACK_CHANNEL,
-      blocks,
-    }),
-  });
+  if (!screenshotResponse.ok) {
+    console.error('Failed to retrieve the screenshot for ');
+    return;
+  }
+
+  const screenshotBlob = await screenshotResponse.blob();
+
+  // Upload screenshot
+  const formData = new FormData();
+  const filename = `app-ranking-index-${new Date().toISOString().slice(0, 10)}.png`;
+
+  formData.append('token', SLACK_BOT_TOKEN ?? '');
+  formData.append('channels', SLACK_CHANNEL ?? '');
+  formData.append('file', screenshotBlob, filename);
+  formData.append('title', formatDate(new Date()));
+
+  try {
+    const response = await fetch('https://slack.com/api/files.upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error uploading file: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+
+    if (!result.ok) {
+      throw new Error(`Error uploading file: ${result.error}`);
+    }
+
+    console.log('File uploaded:', result.file.id);
+  } catch (error) {
+    console.error('Error uploading file:', error);
+  }
 };
 
-export const postToSlack = (index: number, details: Details[]) => {
-  const displayIndex = Math.round(index * 100);
-  const indexDescription = getIndexDescription(displayIndex);
-  const summary = `Index is at *${displayIndex}*, ${indexDescription}`;
-  const summaryPlain = `Index is at ${displayIndex}, ${indexDescription}`;
-  const detailsByRankingAndWeight = [...details].sort((det1, det2) => {
-    if (det2.ranking === null && det1.ranking !== null) {
-      return -1;
-    }
-    if (det1.ranking === null && det2.ranking !== null) {
-      return 1;
-    }
-    if (det1.ranking === null && det2.ranking === null) {
-      return det2.weight - det1.weight;
-    }
+const formatDate = (date: Date): string => {
+  const options: Intl.DateTimeFormatOptions = {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  };
 
-    return det1.ranking! - det2.ranking!;
-  });
-  const detailsByRanking = detailsByRankingAndWeight.filter((x) => x.ranking !== null);
-  const detailsWithoutRanking = detailsByRankingAndWeight.filter((x) => x.ranking === null);
-
-  const blocks = [
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: summary,
-      },
-    },
-    ...detailsByRanking.map((det) => ({
-      type: 'context',
-      elements: [
-        {
-          type: 'plain_text',
-          text: `#${det.ranking}`,
-        },
-        {
-          type: 'image',
-          image_url: EXCHANGE_META[det.name].iconUrl,
-          alt_text: EXCHANGE_META[det.name].displayName,
-        },
-        {
-          type: 'mrkdwn',
-          text: `*${EXCHANGE_META[det.name].displayName}*`,
-          verbatim: true,
-        },
-      ],
-    })),
-    {
-      type: 'context',
-      elements: [
-        {
-          type: 'plain_text',
-          text: '> #200',
-        },
-        ...detailsWithoutRanking.map((det) => ({
-          type: 'image',
-          image_url: EXCHANGE_META[det.name].iconUrl,
-          alt_text: EXCHANGE_META[det.name].displayName,
-        })),
-        {
-          type: 'mrkdwn',
-          text: 'Everyone else',
-        },
-      ],
-    },
-  ];
-
-  return fetch('https://slack.com/api/chat.postMessage', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${SLACK_BOT_TOKEN}`,
-      Accept: 'application/json',
-      'Content-Type': 'application/json; charset=UTF-8',
-    },
-    body: JSON.stringify({
-      channel: SLACK_CHANNEL,
-      blocks: JSON.stringify(blocks),
-      text: summaryPlain,
-    }),
-  })
-    .then((response) => response.json())
-    .then(console.log);
+  const formatter = new Intl.DateTimeFormat('en-US', options);
+  return formatter.format(date);
 };
