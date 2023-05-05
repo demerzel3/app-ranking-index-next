@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import qs from 'qs';
 
 import { gaugePropsToCacheKey, getLatestGaugeProps } from './gauge';
@@ -24,13 +25,15 @@ export const postGaugeToSlack = async (host: string) => {
     omit_background: true,
     cache: true,
     cache_ttl: 2592000,
-    cache_key: cacheKey,
+    cache_key: getHashedCacheKey(cacheKey),
   };
   const screenshotUrl = `https://api.screenshotone.com/take?${qs.stringify(screenshotParams)}`;
   const screenshotResponse = await fetch(screenshotUrl);
 
   if (!screenshotResponse.ok) {
-    console.error('Failed to retrieve the screenshot for ');
+    console.error(
+      `Failed to retrieve the screenshot for ${cacheKey}: ${JSON.stringify(await screenshotResponse.json())}`
+    );
     return;
   }
 
@@ -65,6 +68,13 @@ export const postGaugeToSlack = async (host: string) => {
   } catch (error) {
     console.error('Error uploading file:', error);
   }
+};
+
+const getHashedCacheKey = (cacheKey: string): string => {
+  const hash = crypto.createHash('sha256');
+  hash.update(cacheKey);
+
+  return hash.digest('hex');
 };
 
 const formatDate = (date: Date): string => {
