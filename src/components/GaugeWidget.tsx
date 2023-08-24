@@ -13,35 +13,11 @@ type Props = {
 
 const GaugeWidget = ({ index, rankedExchanges }: Props) => {
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'row',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          padding: 24,
-          background: 'rgb(var(--background-rgb))',
-          borderRadius: 24,
-          color: 'rgb(var(--text-rgb))',
-          minWidth: 450,
-        }}
-      >
+    <div className="flex flex-row">
+      <div className="flex min-w-[450px] flex-row rounded-3xl bg-neutral-900 p-6 text-neutral-200">
         <LinearGauge currentValue={index} height={242} width={48} triangleSize={24} />
-        <div style={{ flexDirection: 'column' }}>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              marginLeft: 36,
-              fontSize: 28,
-              fontWeight: 600,
-              marginBottom: 18,
-            }}
-          >
+        <div>
+          <div className="mb-4 ml-9 flex flex-row text-4xl font-semibold">
             <div
               style={{
                 backgroundColor: getColor(index),
