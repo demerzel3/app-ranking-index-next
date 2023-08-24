@@ -12,19 +12,22 @@ export type HistoryEntry = {
 export const readHistory = async ({
   fromTime,
   toTime,
+  includeDetails = false,
 }: {
   fromTime: number;
   toTime?: number;
+  includeDetails?: boolean;
 }): Promise<HistoryEntry[]> => {
   const client = await getPool().connect();
+  const fields = includeDetails ? 'time, value, details' : 'time, value';
   try {
     const result =
       typeof toTime === 'number'
-        ? await client.query('SELECT * FROM history WHERE time >= $1 AND time <= $2 ORDER BY time limit 1000', [
+        ? await client.query(`SELECT ${fields} FROM history WHERE time >= $1 AND time <= $2 ORDER BY time`, [
             fromTime,
             toTime,
           ])
-        : await client.query('SELECT * FROM history WHERE time >= $1 ORDER BY time limit 1000', [fromTime]);
+        : await client.query(`SELECT ${fields} FROM history WHERE time >= $1 ORDER BY time`, [fromTime]);
 
     return result.rows.map(parseHistoryEntry);
   } catch (err: any) {
@@ -89,6 +92,6 @@ function parseHistoryEntry(row: any): HistoryEntry {
   return {
     time: parseFloat(time),
     value: parseFloat(value),
-    details,
+    details: details ?? [],
   };
 }

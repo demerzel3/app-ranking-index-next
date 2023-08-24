@@ -18,7 +18,7 @@ type PriceApiResult = {
 };
 
 const fetchPriceData = async (): Promise<PriceApiResult> => {
-  const res = await fetch('https://api.kraken.com/0/public/OHLC?pair=XBTUSD&interval=60', {
+  const res = await fetch('https://api.kraken.com/0/public/OHLC?pair=XBTUSD&interval=1440', {
     // Revalidate every hour
     next: { revalidate: hoursInSeconds(1) },
   });
@@ -26,20 +26,36 @@ const fetchPriceData = async (): Promise<PriceApiResult> => {
     return { result: { XXBTZUSD: [] } };
   }
 
-  return (await res.json()) as PriceApiResult;
+  const result = (await res.json()) as PriceApiResult;
+  const daysFromBeginningOfYear = Math.floor(
+    (new Date().getTime() - new Date(new Date().getFullYear(), 0, 1).getTime()) / 1000 / daysInSeconds(1)
+  );
+
+  return {
+    result: {
+      XXBTZUSD: result.result.XXBTZUSD.slice(-30),
+    },
+  };
 };
 
 const getHistoryData = async () => {
-  const thirtyDaysAgo = Math.floor(Date.now() / 1000) - daysInSeconds(30);
+  // TODO: make start of data parametric
+  const startOfYear = new Date(new Date().getFullYear(), 0, 1).getTime() / 1000;
   const records = await readHistory({
-    fromTime: thirtyDaysAgo,
+    fromTime: startOfYear,
   });
+  const bucketSize = Math.floor(records.length / 150);
 
-  return calculate24hRollingAverage(records).map((entry) => ({
-    // Round the time to the hour
-    time: Math.floor(entry.time / hoursInSeconds(1)) * hoursInSeconds(1),
-    value: entry.value,
-  }));
+  return (
+    calculate24hRollingAverage(records)
+      // TODO: do I need a more intelligent sampling?
+      .filter((_, index) => index % bucketSize === 0)
+      .map((entry) => ({
+        // Round the time to the hour
+        time: Math.floor(entry.time / hoursInSeconds(1)) * hoursInSeconds(1),
+        value: entry.value,
+      }))
+  );
 };
 
 const fetchData = async () => {
