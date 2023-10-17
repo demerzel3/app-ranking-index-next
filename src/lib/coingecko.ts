@@ -20,6 +20,12 @@ const EXCHANGE_ID_TO_NAME_MAP: Record<string, ExchangeName> = {
   okex: 'okx',
 };
 
+const DEFAULT_WEIGHTS = Object.values(EXCHANGE_ID_TO_NAME_MAP).reduce((map, name) => {
+  map[name] = 0;
+
+  return map;
+}, {} as Record<ExchangeName, number>);
+
 const fetchExchanges = async (): Promise<Exchange[]> => {
   return fetch('https://api.coingecko.com/api/v3/exchanges', {}).then((response) => response.json());
 };
@@ -40,10 +46,13 @@ export const fetchExchangesWeighted = async (): Promise<Record<ExchangeName, num
     [[] as Exchange[], 0]
   );
 
-  return relevantExchanges.reduce((map, exchange) => {
-    const weight = exchange.trade_volume_24h_btc_normalized / totalVolume;
-    map[EXCHANGE_ID_TO_NAME_MAP[exchange.id]] = weight;
+  return {
+    ...DEFAULT_WEIGHTS,
+    ...relevantExchanges.reduce((map, exchange) => {
+      const weight = exchange.trade_volume_24h_btc_normalized / totalVolume;
+      map[EXCHANGE_ID_TO_NAME_MAP[exchange.id]] = weight;
 
-    return map;
-  }, {} as Record<ExchangeName, number>);
+      return map;
+    }, {} as Record<ExchangeName, number>),
+  };
 };
