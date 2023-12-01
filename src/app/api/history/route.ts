@@ -1,5 +1,4 @@
 import auth from 'basic-auth';
-import { NextApiRequest, NextApiResponse } from 'next';
 import { NextResponse } from 'next/server';
 
 import { fetchUSFinanceAppIds } from '@/lib/appStore';
@@ -40,7 +39,14 @@ export async function POST(req: Request) {
     return map;
   }, {} as Record<string, number>);
   const details: Details[] = (Object.entries(EXCHANGE_META) as [ExchangeName, ExchangeMeta][]).map(([name, meta]) => {
-    const ranking = appIdsByRankMap[meta.appId] ?? null;
+    // Get the highest ranking among the apps of this exchange
+    const ranking =
+      meta.appIds
+        .map((id) => appIdsByRankMap[id])
+        .filter((rank) => rank !== undefined)
+        .sort((a, b) => b - a)
+        .pop() ?? null;
+
     const weight = exchangeWeight[name];
     const impact = ranking === null ? 0 : expo((201 - ranking) / 200) * weight;
 
