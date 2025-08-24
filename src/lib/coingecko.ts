@@ -4,7 +4,7 @@ import { ExchangeName } from './types';
 
 type Exchange = {
   id: string;
-  trade_volume_24h_btc_normalized: number;
+  trade_volume_24h_btc: number;
 };
 
 const EXCHANGE_ID_TO_NAME_MAP: Record<string, ExchangeName> = {
@@ -38,7 +38,7 @@ export const fetchExchangesWeighted = async (): Promise<Record<ExchangeName, num
       const isRelevant = !!EXCHANGE_ID_TO_NAME_MAP[exchange.id];
       if (isRelevant) {
         list.push(exchange);
-        totalVolume += exchange.trade_volume_24h_btc_normalized;
+        totalVolume += exchange.trade_volume_24h_btc;
       }
 
       return [list, totalVolume];
@@ -49,7 +49,7 @@ export const fetchExchangesWeighted = async (): Promise<Record<ExchangeName, num
   return {
     ...DEFAULT_WEIGHTS,
     ...relevantExchanges.reduce((map, exchange) => {
-      const weight = exchange.trade_volume_24h_btc_normalized / totalVolume;
+      const weight = exchange.trade_volume_24h_btc / totalVolume;
       map[EXCHANGE_ID_TO_NAME_MAP[exchange.id]] = weight;
 
       return map;
