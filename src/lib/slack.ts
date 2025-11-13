@@ -39,32 +39,69 @@ export const postGaugeToSlack = async (host: string) => {
 
   const screenshotBlob = await screenshotResponse.blob();
 
-  // Upload screenshot
-  const formData = new FormData();
+  // Upload screenshot using new Slack file upload API
   const filename = `app-ranking-index-${new Date().toISOString().slice(0, 10)}.png`;
-
-  formData.append('token', SLACK_BOT_TOKEN ?? '');
-  formData.append('channels', SLACK_CHANNEL ?? '');
-  formData.append('file', screenshotBlob, filename);
-  formData.append('title', formatDate(new Date()));
+  const fileTitle = formatDate(new Date());
 
   try {
-    const response = await fetch('https://slack.com/api/files.upload', {
+    // Step 1: Get upload URL
+    const getUploadUrlResponse = await fetch('https://slack.com/api/files.getUploadURLExternal', {
       method: 'POST',
-      body: formData,
+      headers: {
+        Authorization: `Bearer ${SLACK_BOT_TOKEN}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        filename,
+        length: screenshotBlob.size.toString(),
+      }),
     });
-
-    if (!response.ok) {
-      throw new Error(`Error uploading file: ${response.statusText}`);
+    if (!getUploadUrlResponse.ok) {
+      throw new Error(`Error getting upload URL: ${getUploadUrlResponse.statusText}`);
     }
 
-    const result = await response.json();
+    const uploadUrlResult = await getUploadUrlResponse.json();
+    if (!uploadUrlResult.ok) {
+      throw new Error(`Error getting upload URL: ${uploadUrlResult.error}`);
+    }
+    const { upload_url, file_id } = uploadUrlResult;
 
-    if (!result.ok) {
-      throw new Error(`Error uploading file: ${result.error}`);
+    // Step 2: Upload file to the URL
+    const uploadResponse = await fetch(upload_url, {
+      method: 'POST',
+      body: screenshotBlob,
+    });
+    if (!uploadResponse.ok) {
+      throw new Error(`Error uploading file to URL: ${uploadResponse.statusText}`);
     }
 
-    console.log('File uploaded:', result.file.id);
+    // Step 3: Complete the upload
+    const completeUploadResponse = await fetch('https://slack.com/api/files.completeUploadExternal', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${SLACK_BOT_TOKEN}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        files: JSON.stringify([
+          {
+            id: file_id,
+            title: fileTitle,
+          },
+        ]),
+        channels: SLACK_CHANNEL ?? '',
+      }),
+    });
+    if (!completeUploadResponse.ok) {
+      throw new Error(`Error completing upload: ${completeUploadResponse.statusText}`);
+    }
+
+    const completeResult = await completeUploadResponse.json();
+    if (!completeResult.ok) {
+      throw new Error(`Error completing upload: ${completeResult.error}`);
+    }
+
+    console.log('File uploaded:', file_id);
   } catch (error) {
     console.error('Error uploading file:', error);
   }
